@@ -31,11 +31,11 @@ fn compute_fft(filename: &str) {
     let start_time = Instant::now();
 
     let mut frequencies = Vec::new();
-    let mut fft_processor = FFTProcessor::new();
+    let mut fft_processor = FFTProcessor::new(LENGTH);
 
     for signal in burst {
         // Estimate the frequency
-        let frequency: f32 = fft_processor.freq_from_fft(signal, SAMPLING_RATE);
+        let frequency: f32 = fft_processor.freq_from_fft(&signal, SAMPLING_RATE);
         frequencies.push(frequency);
     }
 
