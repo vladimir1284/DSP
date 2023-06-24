@@ -5,7 +5,9 @@ use std::time::Instant;
 
 mod fft;
 mod zero_cross;
+
 use fft::FFTProcessor;
+use zero_cross::ZeroCrossProcessor;
 
 const LENGTH: usize = 511;
 const SAMPLING_RATE: usize = 100 * 1000 * 1000; // Sampling frequency
@@ -29,7 +31,7 @@ fn compute_fft(filename: &str) {
     let start_time = Instant::now();
 
     let mut frequencies = Vec::new();
-    let mut fft_processor = FFTProcessor::new(LENGTH);
+    let mut fft_processor = FFTProcessor::new();
 
     for signal in burst {
         // Estimate the frequency
@@ -58,9 +60,12 @@ fn compute_zc(filename: &str) {
     let start_time = Instant::now();
 
     let mut frequencies = Vec::new();
+
+    let processor = ZeroCrossProcessor::new(LENGTH);
+
     for signal in burst {
         // Estimate the frequency
-        let frequency: f32 = zero_cross::freq_from_crossings(signal, SAMPLING_RATE);
+        let frequency: f32 = processor.freq_from_crossings(&signal, SAMPLING_RATE);
         frequencies.push(frequency);
     }
 
