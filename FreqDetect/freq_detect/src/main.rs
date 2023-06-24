@@ -5,6 +5,7 @@ use std::time::Instant;
 
 mod fft;
 mod zero_cross;
+use fft::FFTProcessor;
 
 const LENGTH: usize = 511;
 const SAMPLING_RATE: usize = 100 * 1000 * 1000; // Sampling frequency
@@ -28,9 +29,11 @@ fn compute_fft(filename: &str) {
     let start_time = Instant::now();
 
     let mut frequencies = Vec::new();
+    let mut fft_processor = FFTProcessor::new(LENGTH);
+
     for signal in burst {
         // Estimate the frequency
-        let frequency: f32 = fft::freq_from_fft(signal, SAMPLING_RATE);
+        let frequency: f32 = fft_processor.freq_from_fft(signal, SAMPLING_RATE);
         frequencies.push(frequency);
     }
 
