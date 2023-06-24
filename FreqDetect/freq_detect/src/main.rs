@@ -5,14 +5,15 @@ use std::time::Instant;
 
 mod zero_cross;
 
-const SIGNAL_SIZE: usize = 512;
+const LENGTH: usize = 511;
 const SAMPLING_RATE: usize = 100 * 1000 * 1000; // Sampling frequency
 
 fn main() {
     let filename: &str = "TxBurst.csv";
     println!("Reading file \"{}\"\n", filename);
 
-    let burst: Vec<[isize; 512]> = read_signal_from_file(filename).expect("Failed to read signal.");
+    let burst: Vec<[isize; LENGTH]> =
+        read_signal_from_file(filename).expect("Failed to read signal.");
     let n_signals = burst.len();
 
     let start_time = Instant::now();
@@ -38,16 +39,16 @@ fn main() {
     }
 }
 
-fn read_signal_from_file(filename: &str) -> Result<Vec<[isize; SIGNAL_SIZE]>, std::io::Error> {
+fn read_signal_from_file(filename: &str) -> Result<Vec<[isize; LENGTH]>, std::io::Error> {
     let file: File = File::open(filename)?;
     let reader: BufReader<File> = BufReader::new(file);
 
-    let mut burst: Vec<[isize; 512]> = Vec::new();
+    let mut burst: Vec<[isize; LENGTH]> = Vec::new();
     for line in reader.lines() {
         if let Ok(value) = line {
-            let mut values = [0; SIGNAL_SIZE];
+            let mut values = [0; LENGTH];
             let parts: Vec<&str> = value.trim().split(',').skip(6).collect();
-            for (i, part) in parts.iter().enumerate().take(SIGNAL_SIZE) {
+            for (i, part) in parts.iter().enumerate().take(LENGTH) {
                 if let Ok(number) = part.parse::<isize>() {
                     values[i] = number;
                 }

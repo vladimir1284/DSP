@@ -1,9 +1,8 @@
-const SIGNAL_SIZE: usize = 512;
+const LENGTH: usize = 511;
 
-pub fn freq_from_crossings(signal: [isize; SIGNAL_SIZE], sampling_rate: usize) -> f32 {
+pub fn freq_from_crossings(signal: [isize; LENGTH], sampling_rate: usize) -> f32 {
     // Find all indices right before a rising-edge zero crossing
-    let indices: Vec<usize> = (0..SIGNAL_SIZE - 2)
-        // SIGNAL_SIZE - 2 instead of -1 for obtaing the same resutls as in python
+    let indices: Vec<usize> = (0..LENGTH - 1)
         .filter(|&i| signal[i] < 0 && signal[i + 1] >= 0)
         .collect();
 
