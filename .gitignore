@@ -1,3 +1,4 @@
 IIR/Chebyshev.pdf
 FreqDetect/freq_detect/target/*
 FreqDetect/freq_detect/Cargo.lock
+FreqDetect/fft/*
