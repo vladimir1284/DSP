@@ -24,52 +24,36 @@ impl FFTProcessor {
         }
     }
 
-    pub fn freq_from_fft(&mut self, signal: &[isize], sampling_rate: usize) -> f32 {
-        // Create input data vector
-        let mut indata: Vec<f64> = Vec::new();
-        for (i, value) in signal.iter().enumerate() {
-            indata.push((*value as f64 * self.window[i]) as f64);
-        }
-
-        // forward transform the signal
-        self.r2c.process(&mut indata, &mut self.spectrum).unwrap();
-
-        // Find the index of the highest value in the spectrum
-        let mut max_value: usize = 0;
-        let mut max_index: usize = 0;
-        let abs_array: Vec<usize> = self
-            .spectrum
+    pub fn freq_from_fft(&mut self, signal: &[isize], sampling_rate: usize) -> f64 {
+        let mut indata = signal
             .iter()
             .enumerate()
-            .map(|(i, element)| {
-                let norm = element.norm() as usize;
-                if norm > max_value {
-                    max_value = norm;
-                    max_index = i;
-                }
-                norm
-            })
-            .collect();
+            .map(|(i, &v)| v as f64 * self.window[i])
+            .collect::<Vec<_>>();
 
-        // Make a parabolic interpolation for obtaining a real value
-        let mut true_i: f32 = max_index as f32;
-        // Verify that we have one value before and after the maximum index of the spectrum
-        if max_index > 0 && max_index < self.length - 1 {
-            let prev_idx: usize = max_index.checked_sub(1).unwrap_or(0);
-            let next_idx: usize = max_index.checked_add(1).unwrap_or(self.length - 1);
+        self.r2c.process(&mut indata, &mut self.spectrum).unwrap();
 
-            let prev_value: f32 = (abs_array[prev_idx] as f32).log10();
-            let next_value: f32 = (abs_array[next_idx] as f32).log10();
-            let current_value: f32 = (abs_array[max_index] as f32).log10();
-
-            let numerator: f32 = 0.5 * (prev_value - next_value);
-            let denominator: f32 = prev_value - 2.0 * current_value + next_value;
-
-            if denominator != 0.0 {
-                true_i = numerator / denominator + max_index as f32;
+        let mut max_idx = 0;
+        let mut max_value = 0.0;
+        for (i, element) in self.spectrum.iter().enumerate() {
+            let norm = element.norm();
+            if norm > max_value {
+                max_value = norm;
+                max_idx = i;
             }
         }
-        sampling_rate as f32 * true_i / self.length as f32
+
+        let score = if max_idx > 0 && max_idx < self.length - 1 {
+            let prev = self.spectrum[max_idx - 1].norm().log10();
+            let curr = max_value.log10();
+            let next = self.spectrum[max_idx + 1].norm().log10();
+
+            0.5 * ((prev - next) / (prev - 2.0 * curr + next)) + max_idx as f64
+        } else {
+            max_idx as f64
+        };
+
+        sampling_rate as f64 * score / self.length as f64
     }
 }
 

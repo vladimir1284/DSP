@@ -4,10 +4,10 @@ use std::io::BufReader;
 use std::time::Instant;
 
 mod fft;
-mod zero_cross;
+mod zero_crossings;
 
 use fft::FFTProcessor;
-use zero_cross::ZeroCrossProcessor;
+use zero_crossings::ZeroCrossProcessor;
 
 const LENGTH: usize = 511;
 const SAMPLING_RATE: usize = 100 * 1000 * 1000; // Sampling frequency
@@ -35,12 +35,12 @@ fn compute_fft(filename: &str) {
 
     for signal in burst {
         // Estimate the frequency
-        let frequency: f32 = fft_processor.freq_from_fft(&signal, SAMPLING_RATE);
+        let frequency: f64 = fft_processor.freq_from_fft(&signal, SAMPLING_RATE);
         frequencies.push(frequency);
     }
 
-    let loop_time = start_time.elapsed().as_secs_f32();
-    let average_loop_time = loop_time / n_signals as f32;
+    let loop_time = start_time.elapsed().as_secs_f64();
+    let average_loop_time = loop_time / n_signals as f64;
 
     println!("Average loop time: {:.2} ms", 1000.0 * average_loop_time);
 
@@ -65,12 +65,12 @@ fn compute_zc(filename: &str) {
 
     for signal in burst {
         // Estimate the frequency
-        let frequency: f32 = processor.freq_from_crossings(&signal, SAMPLING_RATE);
+        let frequency: f64 = processor.freq_from_crossings(&signal, SAMPLING_RATE);
         frequencies.push(frequency);
     }
 
-    let loop_time = start_time.elapsed().as_secs_f32();
-    let average_loop_time = loop_time / n_signals as f32;
+    let loop_time = start_time.elapsed().as_secs_f64();
+    let average_loop_time = loop_time / n_signals as f64;
 
     println!("Average loop time: {:.2} ms", 1000.0 * average_loop_time);
 
@@ -104,13 +104,13 @@ fn read_signal_from_file(filename: &str) -> Result<Vec<[isize; LENGTH]>, std::io
     Ok(burst)
 }
 
-fn ave_std(data: &[f32]) -> (f32, f32) {
+fn ave_std(data: &[f64]) -> (f64, f64) {
     let n = data.len();
-    let sum: f32 = data.iter().sum();
-    let average = sum / n as f32;
+    let sum: f64 = data.iter().sum();
+    let average = sum / n as f64;
 
-    let sum_squared_diff: f32 = data.iter().map(|x| (x - average).powi(2)).sum();
-    let variance = sum_squared_diff / n as f32;
+    let sum_squared_diff: f64 = data.iter().map(|x| (x - average).powi(2)).sum();
+    let variance = sum_squared_diff / n as f64;
     let std_deviation = variance.sqrt();
 
     (average, std_deviation)
